@@ -3,7 +3,15 @@
 
 In this turorial we show a typical workflow for retreiving **acoustic telemetry data** from the ETN portal using the `etn` package. The `etn` package was developed by INBO, you can browse the source code at [https://github.com/inbo/etn/](https://github.com/inbo/etn/) or check the package's [page](https://github.com/inbo/etn/). This tutorial is based in Damiano Oldoni's article [Explore acoustic telemetry data](https://inbo.github.io/etn/articles/acoustic_telemetry.html) and the European Tracking Network's webinar on **["Management, visualization and analyses of aquatic telemetry data"](https://www.youtube.com/watch?v=f37cDY71iqM)**.
 
-## Introduction
+### Topics on this tutorial
+1. [Introduction](#introduction)
+2. [Select a project of interest](#project)
+3. [Animals](#animals)
+4. [Detections](#detections)
+5. [Stations](#stations)
+6. [Acoustic tags](#tags)
+
+## Introduction <a name="introduction"></a>
 
 ### Installation
 You can install this package from GitHub with:
@@ -48,7 +56,7 @@ con <- connect_to_etn(username = "username", password = "password")
 
 Using con as variable to store the collection is not mandatory, but it makes your life much easier as con is the default value of the argument connection, present in every other function of this package
 
-## Select a project of interest
+## Select a project of interest <a name="project"></a>
 
 Not sure of what your project code is? Let's get an overview of all projects:
 
@@ -110,7 +118,7 @@ list_animal_project_codes() %>% head(10)
 ```
 
 
-## Animals
+## Animals <a name="animals"></a>
 
 By using `get_animals()` you can retrieve information about each animal (`animal_id`), such as scientific name, length, capture/release date and location, and the attached tag(s) (`tag_serial_number`):
 
@@ -125,7 +133,7 @@ What species and how many individuals are tracked for the `FISHINTEL` project?
 fishintel_animals %>% count(scientific_name)
 ```
 
-## Detections
+## Detections <a name="detections"></a>
 
 Let’s say we are interested in checking the data of bluefin tuna (*Thunnus thynnus*). You can retreive the detection history using `get_acoustic_detections`:
 
@@ -270,7 +278,7 @@ fishintel_detections_tuna %>%
 # 5     10970    36
 ```
 
-## Stations
+## Stations <a name="stations"></a>
 
 In how many statuins have the individuals been detected?
 
@@ -346,7 +354,7 @@ fishintel_stations_tuna_n
 # 3 gwineas          3
 ```
 
-## Acoustic tags
+## Acoustic tags <a name="tags"></a>
 
 To get more information about the tags involved in tuna detections (`fishintel_detections_tuna`), you can use the function `get_tags`, which returns tag related information such as `serial number`, `manufacturer`, `model`, and `frequency`:
 
