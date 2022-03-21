@@ -10,6 +10,7 @@ In this turorial we show a typical workflow for retreiving **acoustic telemetry 
 4. [Detections](#detections)
 5. [Stations](#stations)
 6. [Acoustic tags](#tags)
+7. [Acoustic network projects](#network)
 
 ## Introduction <a name="introduction"></a>
 
@@ -357,6 +358,85 @@ fishintel_stations_tuna_n
 ## Acoustic tags <a name="tags"></a>
 
 To get more information about the tags involved in tuna detections (`fishintel_detections_tuna`), you can use the function `get_tags`, which returns tag related information such as `serial number`, `manufacturer`, `model`, and `frequency`:
+
+```
+fishintel_tuna_tags_id <- list_values(fishintel_detections_tuna, acoustic_tag_id)
+```
+```
+# 5 unique acoustic_tag_id values
+```
+
+```
+fishintel_tuna_tags_id
+
+#[1] "A69-1303-2746" "A69-1303-2748" "A69-1303-2749" "A69-1303-2766" "A69-1303-2769"
+```
+
+You can also retrieve such information by tag_serial_number:
+
+```
+fishintel_tuna_tags_serial <- unique(fishintel_detections_tuna$tag_serial_number)
+tags_tuna_serial <- get_tags(tag_serial_number = fishintel_tuna_tags_serial)
+tags_tuna_serial
+```
+```
+# # A tibble: 5 × 54
+#   tag_serial_number tag_type tag_subtype sensor_type acoustic_tag_id acoustic_tag_id_alternative manufacturer  model frequency status activation_date
+#   <chr>             <chr>    <chr>       <chr>       <chr>           <chr>                       <chr>         <chr> <chr>     <chr>  <dttm>
+# 1 21272746          acoustic animal      NA          R64K-2746       A69-1303-2746               THELMA BIOTEL HP-16 069K      active 2021-08-27 15:28:00
+# 2 21272748          acoustic animal      NA          R64K-2748       A69-1303-2748               THELMA BIOTEL HP-16 069K      active 2021-08-29 17:54:00
+# 3 21272749          acoustic animal      NA          R64K-2749       A69-1303-2749               THELMA BIOTEL HP-16 069K      active 2021-08-28 11:12:00
+# 4 21272766          acoustic animal      NA          R64K-2766       A69-1303-2766               THELMA BIOTEL HP-16 069K      active 2021-08-29 09:41:00
+# 5 21272769          acoustic animal      NA          R64K-2769       A69-1303-2769               THELMA BIOTEL HP-16 069K      active 2021-09-14 15:33:00
+# # … with 43 more variables:
+```
+
+> :warning: However, keep in mind that there is a fundamental difference between the arguments `acoustic_tag_id` and `tag_serial_number`: the `tag_serial_number` identifies the device, which could contain multiple tags or sensors and thus multiple `acoustic_tag_id`.
+
+
+##  Acoustic network projects <a name="network"></a>
+
+The detection of tuna for the FISHITNTEL project is possible due to an array of receivers and deployments, that in ETN constitutes a network project. These are mentioned in the field `acoustic_project_code`. You can retreive them via de *list* function `list_values()`:
+
+```
+fishintel_network_project <- fishintel_detections_tuna %>%
+  list_values(acoustic_project_code)
+```
+```
+# 1 unique acoustic_project_code values
+```
+```
+fishintel_network_project
+```
+```
+# [1] "FISHINTEL"
+```
+
+To get more information about this network project, you can use function `get_acoustic_projects()`
+
+```
+fishintel_network_project_info <- get_acoustic_projects(
+  acoustic_project_code = fishintel_network_project
+)
+fishintel_network_project_info
+```
+```
+# # A tibble: 1 × 11
+#   project_id project_code project_type telemetry_type project_name                        start_date end_date   latitude longitude moratorium imis_dataset_id
+#        <int> <chr>        <chr>        <chr>          <chr>                               <date>     <date>        <dbl>     <dbl> <chr>                <int>
+# 1        946 FISHINTEL    acoustic     Acoustic       Fisheries Innovation for sustainab… 2021-02-01 2023-06-30     50.2     -1.69 0                     7881
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
