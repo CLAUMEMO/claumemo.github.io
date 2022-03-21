@@ -48,7 +48,7 @@ con <- connect_to_etn(username = "username", password = "password")
 
 Using con as variable to store the collection is not mandatory, but it makes your life much easier as con is the default value of the argument connection, present in every other function of this package
 
-## Select project or projects of interest
+## Select a project of interest
 
 Not sure of what your project code is? Let's get an overview of all projects:
 
@@ -93,9 +93,262 @@ fishintel_animal_project
 
 This is exactly the same as retrieving all projects first and filtering them afterwards based on column `project_code`:
 
+```{r}
+all_projects %>%
+  filter(project_code == "FISHINTEL")
+```
+
+To list all available animal project codes as a vector, you can use list_animal_project_codes(), one of the etn functions in the [`list_*` family](https://inbo.github.io/etn/reference/index.html#section-list-parameter-options):
+
+```{r}
+list_animal_project_codes() %>% head(10)
+
+##  [1] "2004_Gudena"           "2010_phd_reubens"      "2010_phd_reubens_sync"
+##  [4] "2011_Loire"            "2011_rivierprik"       "2011_Warnow"          
+##  [7] "2012_leopoldkanaal"    "2013_albertkanaal"     "2013_Foyle"           
+## [10] "2014_demer"
+```
 
 
+## Animals
 
+By using `get_animals()` you can retrieve information about each animal (`animal_id`), such as scientific name, length, capture/release date and location, and the attached tag(s) (`tag_serial_number`):
+
+```{r}
+fishintel_animals <- get_animals(animal_project_code = "FISHINTEL")
+fishintel_animals %>% head(5)
+```
+
+What species and how many individuals are tracked for the `FISHINTEL` project?
+
+```
+fishintel_animals %>% count(scientific_name)
+```
+
+## Detections
+
+Let’s say we are interested in checking the data of bluefin tuna (*Thunnus thynnus*). You can retreive the detection history using `get_acoustic_detections`:
+
+```
+fishintel_detections_tuna <- get_acoustic_detections(
+  animal_project_code = "FISHINTEL",
+  scientific_name = "Thunnus thynnus"
+)
+```
+
+Preview
+
+```
+fishintel_detections_tuna %>% head(5)
+```
+```
+# # A tibble: 5 × 20
+#   detection_id date_time           tag_serial_number acoustic_tag_id animal_project_code animal_id scientific_name
+#          <int> <dttm>              <chr>             <chr>           <chr>                   <int> <chr>          
+# 1    590293357 2021-10-28 15:15:39 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+# 2    590293358 2021-10-28 15:16:58 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+# 3    590293359 2021-10-28 15:17:48 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+# 4    590293360 2021-10-28 15:18:26 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+# 5    590293361 2021-10-28 15:19:53 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+# # … with 13 more variables: acoustic_project_code <chr>, receiver_id <chr>, station_name <chr>, deploy_latitude <dbl>,
+# #   deploy_longitude <dbl>, sensor_value <dbl>, sensor_unit <chr>, sensor2_value <dbl>, sensor2_unit <chr>,
+# #   signal_to_noise_ratio <int>, source_file <chr>, qc_flag <chr>, deployment_id <int>
+```
+
+You can also specify a time range, for example, check for detections within the month of september:
+
+```
+fishintel_september_detections_tuna <- get_acoustic_detections(
+  animal_project_code = "FISHINTEL",
+  start_date = "2021-10-01",
+  end_date = "2021-10-31", # The end date is exclusive
+  scientific_name = "Thunnus thynnus"
+)
+fishintel_september_detections_tuna
+```
+```
+# # A tibble: 45 × 20
+#    detection_id date_time           tag_serial_number acoustic_tag_id animal_project_code animal_id scientific_name
+#           <int> <dttm>              <chr>             <chr>           <chr>                   <int> <chr>          
+#  1    590293357 2021-10-28 15:15:39 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  2    590293358 2021-10-28 15:16:58 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  3    590293359 2021-10-28 15:17:48 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  4    590293360 2021-10-28 15:18:26 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  5    590293361 2021-10-28 15:19:53 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  6    590293362 2021-10-28 15:21:21 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  7    590293363 2021-10-28 15:22:35 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  8    590293364 2021-10-28 15:23:26 21272746          A69-1303-2746   FISHINTEL               10955 Thunnus thynnus
+#  9    590293365 2021-10-28 17:09:44 21272748          A69-1303-2748   FISHINTEL               10962 Thunnus thynnus
+# 10    590293366 2021-10-28 17:10:34 21272748          A69-1303-2748   FISHINTEL               10962 Thunnus thynnus
+# # … with 35 more rows, and 13 more variables: acoustic_project_code <chr>, receiver_id <chr>, station_name <chr>,
+# #   deploy_latitude <dbl>, deploy_longitude <dbl>, sensor_value <dbl>, sensor_unit <chr>, sensor2_value <dbl>,
+# #   sensor2_unit <chr>, signal_to_noise_ratio <int>, source_file <chr>, qc_flag <chr>, deployment_id <int>
+```
+
+Which individuals have been detected (animal_id) and in which period?
+
+```
+fishintel_period_detections_tuna <-
+  fishintel_detections_tuna %>%
+  mutate(date = date(date_time)) %>%
+  group_by(animal_id) %>%
+  summarize(
+    start = min(date),
+    end = max(date)
+  )
+fishintel_period_detections_tuna
+```
+```
+# # A tibble: 5 × 3
+#   animal_id start      end       
+#       <int> <date>     <date>    
+# 1     10955 2021-10-28 2021-10-28
+# 2     10958 2021-10-13 2021-10-13
+# 3     10959 2021-10-28 2021-10-29
+# 4     10962 2021-10-28 2021-10-28
+# 5     10970 2021-09-15 2021-09-15
+```
+
+Notice we group by `animal_id`, the unique identifier of the fish. However, if the fish has only been tagged once (as typically occurs), we could use `acoustic_tag_id` as well, i.e. the identifier picked up by acoustic receivers:
+
+```
+fishintel_detections_tuna %>%
+  mutate(date = date(date_time)) %>%
+  group_by(acoustic_tag_id) %>%
+  summarize(
+    start = min(date),
+    end = max(date)
+  )
+```
+```
+# # A tibble: 5 × 3
+#   acoustic_tag_id start      end       
+#   <chr>           <date>     <date>    
+# 1 A69-1303-2746   2021-10-28 2021-10-28
+# 2 A69-1303-2748   2021-10-28 2021-10-28
+# 3 A69-1303-2749   2021-10-13 2021-10-13
+# 4 A69-1303-2766   2021-10-28 2021-10-29
+# 5 A69-1303-2769   2021-09-15 2021-09-15
+```
+
+We can also get the tracking duration of each fish:
+
+```
+fishintel_duration_detections_tuna <-
+  fishintel_detections_tuna %>%
+  group_by(animal_id) %>%
+  summarize(duration = max(date_time) - min(date_time))
+fishintel_duration_detections_tuna
+```
+```
+# # A tibble: 5 × 2
+#   animal_id duration  
+#       <int> <drtn>    
+# 1     10955   467 secs
+# 2     10958  1200 secs
+# 3     10959 67505 secs
+# 4     10962 23433 secs
+# 5     10970  2661 secs
+```
+
+How many times has an individual has been detected?
+
+```
+fishintel_detections_tuna %>%
+  group_by(animal_id) %>%
+  count()
+```
+```
+# # A tibble: 5 × 2
+# # Groups:   animal_id [5]
+#   animal_id     n
+#       <int> <int>
+# 1     10955     8
+# 2     10958    18
+# 3     10959    15
+# 4     10962     4
+# 5     10970    36
+```
+
+## Stations
+
+In how many statuins have the individuals been detected?
+
+```
+fishintel_detections_tuna %>%
+  group_by(animal_id) %>%
+  distinct(station_name) %>%
+  count()
+```
+```
+# A tibble: 5 × 2
+# Groups:   animal_id [5]
+  animal_id     n
+      <int> <int>
+1     10955     1
+2     10958     1
+3     10959     2
+4     10962     2
+5     10970     1
+```
+
+Which stations have been involved? You can retrieve them using [`list_values`](https://inbo.github.io/etn/reference/list_values.html) function applied to column `station_name`:
+
+```
+fishintel_stations_tuna <-
+  fishintel_detections_tuna %>%
+  list_values(station_name)
+```
+```
+# 3 unique station_name values
+```
+```
+fishintel_stations_tuna
+# [1] "gwineas"  "falmouth" "dodman"  
+```
+
+Notice how a detection station can be linked to multiple deployments:
+
+```
+fishintel_detections_tuna %>%
+  distinct(station_name, deployment_id) %>%
+  group_by(station_name) %>%
+  add_tally() %>%
+  arrange(desc(n))
+```
+```
+# # A tibble: 3 × 3
+# # Groups:   station_name [3]
+#   station_name deployment_id     n
+#   <chr>                <int> <int>
+# 1 gwineas              13138     1
+# 2 falmouth             13136     1
+# 3 dodman               13137     1
+```
+
+It’s also interesting to know the number of unique individuals per station:
+
+```
+fishintel_stations_tuna_n <-
+  fishintel_detections_tuna %>%
+  distinct(station_name, animal_id) %>%
+  group_by(station_name) %>%
+  count()
+fishintel_stations_tuna_n
+```
+```
+# # A tibble: 3 × 2
+# # Groups:   station_name [3]
+#   station_name     n
+#   <chr>        <int>
+# 1 dodman           1
+# 2 falmouth         3
+# 3 gwineas          3
+```
+
+## Acoustic tags
+
+To get more information about the tags involved in tuna detections (`fishintel_detections_tuna`), you can use the function `get_tags`, which returns tag related information such as `serial number`, `manufacturer`, `model`, and `frequency`:
 
 
 
